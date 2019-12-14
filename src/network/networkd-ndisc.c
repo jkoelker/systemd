@@ -632,6 +632,8 @@ static int ndisc_router_handler(Link *link, sd_ndisc_router *rt) {
         if (r < 0)
                 return log_link_warning_errno(link, r, "Failed to get RA flags: %m");
 
+        log_link_debug(link, "%s: flags %s", link->ifname,
+                       flags & ND_RA_FLAG_MANAGED ? "MANAGED" : flags & ND_RA_FLAG_OTHER ? "OTHER" : "none");
         if (flags & (ND_RA_FLAG_MANAGED | ND_RA_FLAG_OTHER)) {
                 /* (re)start DHCPv6 client in stateful or stateless mode according to RA flags */
                 r = dhcp6_request_address(link, !(flags & ND_RA_FLAG_MANAGED));
