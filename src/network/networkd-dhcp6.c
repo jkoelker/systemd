@@ -343,11 +343,15 @@ int dhcp6_request_prefix_delegation(Link *link) {
         HASHMAP_FOREACH(l, link->manager->links, i) {
                 int r, enabled;
 
-                if (l == link)
+                if (l == link) {
+                        log_link_debug(l, "skipping link self");
                         continue;
+                }
 
-                if (!l->dhcp6_client)
+                if (!l->dhcp6_client) {
+                        log_link_debug(l, "skipping link %s without client", l->ifname);
                         continue;
+                }
 
                 r = sd_dhcp6_client_get_prefix_delegation(l->dhcp6_client, &enabled);
                 if (r < 0) {
@@ -364,8 +368,10 @@ int dhcp6_request_prefix_delegation(Link *link) {
                 }
 
                 r = sd_dhcp6_client_is_running(l->dhcp6_client);
-                if (r <= 0)
+                if (r <= 0) {
+                        log_link_debug(l, "client for link %s is not running", l->ifname);
                         continue;
+                }
 
                 if (enabled != 0) {
                         log_link_debug(l, "Requesting re-assignment of delegated prefixes after adding new link");
